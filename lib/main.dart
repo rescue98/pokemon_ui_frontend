@@ -1,125 +1,216 @@
 import 'package:flutter/material.dart';
+import 'services/pokemon_services.dart';
+import 'models/pokemon_model.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Pokémon UI',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+        primarySwatch: Colors.purple,
+        textTheme: TextTheme(
+          bodyLarge: TextStyle(fontFamily: 'Poppins'),
+          bodyMedium: TextStyle(fontFamily: 'Poppins'),
+        ),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: PokemonListScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
+class PokemonListScreen extends StatefulWidget {
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  _PokemonListScreenState createState() => _PokemonListScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _PokemonListScreenState extends State<PokemonListScreen> {
+  final PokemonService _pokemonService = PokemonService();
+  late Future<List<Pokemon>> _pokemons;
+  List<Pokemon> _capturedPokemons = [];
+  final int _limit = 10; 
+  int _offset = 0; 
+  String _searchTerm = '';
+  String? _selectedType;
+  final List<String> _pokemonTypes = [
+    'Fuego',
+    'Agua',
+    'Planta',
+    'Eléctrico',
+    'Tierra',
+    'Hielo',
+    'Lucha',
+    'Psíquico',
+    'Bicho',
+    'Volador',
+    'Fantasma',
+    'Roca',
+    'Acero',
+    'Hada',
+  ]; // Lista de tipos de Pokémon
 
-  void _incrementCounter() {
+  @override
+  void initState() {
+    super.initState();
+    _fetchPokemons(); // Cargar Pokémon al inicio
+  }
+
+  void _fetchPokemons() {
+    _pokemons = _pokemonService.fetchPokemons(_offset, _limit);
+  }
+
+  void _onSearchChanged(String value) {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      _searchTerm = value.toLowerCase();
+    });
+  }
+
+  void _onTypeSelected(String? type) {
+    setState(() {
+      _selectedType = type; 
+    });
+  }
+
+  void _nextPage() {
+    setState(() {
+      _offset += _limit;
+      _fetchPokemons();
+    });
+  }
+
+  void _previousPage() {
+    setState(() {
+      if (_offset - _limit >= 0) {
+        _offset -= _limit;
+      }
+      _fetchPokemons();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: Text('Pokémon List', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold)),
+        actions: [
+          PopupMenuButton<String>(
+            icon: Icon(Icons.filter_list),
+            onSelected: _onTypeSelected,
+            itemBuilder: (BuildContext context) {
+              return _pokemonTypes.map((String type) {
+                return PopupMenuItem<String>(
+                  value: type,
+                  child: Text(type),
+                );
+              }).toList();
+            },
+          ),
+        ],
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
+      body: FutureBuilder<List<Pokemon>>(
+        future: _pokemons,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('No pokemons found'));
+          }
+
+          List<Pokemon> pokemons = snapshot.data!;
+
+          // Este código sirve para filtrar pokemones
+          final filteredPokemons = pokemons.where((pokemon) {
+            final isMatchName = pokemon.name.toLowerCase().contains(_searchTerm);
+            final isMatchType = _selectedType == null || pokemon.types.contains(_selectedType);
+            return isMatchName || isMatchType;
+          }).toList();
+
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  decoration: InputDecoration(
+                    labelText: 'Buscar Pokémon',
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: _onSearchChanged,
+                ),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: filteredPokemons.length,
+                  itemBuilder: (context, index) {
+                    final pokemon = filteredPokemons[index];
+                    final isCaptured = _capturedPokemons.contains(pokemon);
+
+                    return ListTile(
+                      title: Text(pokemon.name, style: TextStyle(fontFamily: 'Poppins')),
+                      subtitle: Text(pokemon.types.join(', ')),
+                      tileColor: isCaptured ? Colors.green.withOpacity(0.3) : null,
+                      onTap: () {
+                        setState(() {
+                          if (isCaptured) {
+                            _capturedPokemons.remove(pokemon); // Descaptura si ya está capturado
+                          } else {
+                            if (_capturedPokemons.length >= 6) {
+                              _capturedPokemons.removeAt(0); // Eliminar el más antiguo
+                            }
+                            _capturedPokemons.add(pokemon); // Captura el Pokémon
+                          }
+                        });
+                      },
+                    );
+                  },
+                ),
+              ),
+              Divider(),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text('Pokémon Capturados (${_capturedPokemons.length}/6)', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _capturedPokemons.length,
+                  itemBuilder: (context, index) {
+                    final pokemon = _capturedPokemons[index];
+
+                    return ListTile(
+                      title: Text(pokemon.name, style: TextStyle(fontFamily: 'Poppins')),
+                      subtitle: Text(pokemon.types.join(', ')),
+                    );
+                  },
+                ),
+              ),
+              
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: _previousPage,
+                      child: Text('Anterior'),
+                    ),
+                    SizedBox(width: 16),
+                    ElevatedButton(
+                      onPressed: _nextPage,
+                      child: Text('Siguiente'),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
+
