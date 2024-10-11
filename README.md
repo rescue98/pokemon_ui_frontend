@@ -18,6 +18,18 @@ samples, guidance on mobile development, and a full API reference.
 
 ### Proyecto Pokemon_ui_frontend
 
+## Clonar el Repositorio
+
+Para clonar el repositorio en tu máquina local, sigue estos pasos:
+
+1. **Abre la Terminal o CMD**.
+2. **Ejecuta el siguiente comando** para clonar el repositorio:
+   git clone https://github.com/tu_usuario/pokemon-api-nodejs.git
+3. cd pokemon-ui_frontend
+4. git checkout develop
+
+Con esto, ya puedes ver el código y realizar cambios si así lo requiere.
+
 ## Estructura de Ramas
 
 Este repositorio sigue la estrategia de **Git Flow**, donde las funcionalidades se desarrollan en ramas separadas y se integran a la rama `develop`. Esto es una buena práctica por varias razones:
